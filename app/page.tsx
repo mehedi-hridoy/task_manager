@@ -170,7 +170,7 @@ export default function Home() {
           borderTop: "1px solid var(--border-subtle)",
         }}
       >
-        Built with intention · Taskflow
+        Mehedi Hasan Hridoy
       </footer>
     </div>
   );
