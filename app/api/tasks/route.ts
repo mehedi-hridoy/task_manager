@@ -13,27 +13,71 @@ export async function GET() {
     return NextResponse.json(tasks);
   } catch (error) {
     return NextResponse.json(
-      { error: String(error) },
-      { status: 500 }
+      {
+        error: String(error),
+      },
+      {
+        status: 500,
+      }
     );
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(
+  request: Request
+) {
   try {
     await connectDB();
 
     const body = await request.json();
 
-    const task = await Task.create(body);
+    const {
+      title,
+      description,
+      status,
+    } = body;
+
+    if (!title?.trim()) {
+      return NextResponse.json(
+        {
+          error: "Title is required",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    if (!description?.trim()) {
+      return NextResponse.json(
+        {
+          error:
+            "Description is required",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    const task = await Task.create({
+      title: title.trim(),
+      description:
+        description.trim(),
+      status,
+    });
 
     return NextResponse.json(task, {
       status: 201,
     });
   } catch (error) {
     return NextResponse.json(
-      { error: String(error) },
-      { status: 500 }
+      {
+        error: String(error),
+      },
+      {
+        status: 500,
+      }
     );
   }
 }
