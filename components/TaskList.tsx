@@ -1,16 +1,32 @@
 "use client";
 
+/**
+ * TaskList — renders the list of task cards.
+ *
+ * Handles three states:
+ *  1. Loading — shows shimmer skeleton cards
+ *  2. Empty   — shows an illustrated empty state with a CTA
+ *  3. Loaded  — shows task cards with staggered animations
+ */
+
 import TaskCard from "./TaskCard";
 import { Task } from "@/types/task";
 
-interface Props {
+// --- Types ---
+
+interface TaskListProps {
   tasks: Task[];
   isLoading: boolean;
   onDelete: (id: string) => void;
   onStatusChange: (id: string, status: string) => void;
 }
 
-/* Skeleton shimmer card */
+// --- Sub-components ---
+
+/**
+ * SkeletonCard — a placeholder card with a shimmer animation.
+ * Mirrors the real TaskCard layout so the skeleton feels accurate.
+ */
 function SkeletonCard({ index }: { index: number }) {
   const shimmerStyle: React.CSSProperties = {
     background:
@@ -27,65 +43,26 @@ function SkeletonCard({ index }: { index: number }) {
         border: "1px solid var(--border-subtle)",
         borderRadius: "var(--radius-md)",
         padding: "18px 20px",
-        animation: `fadeIn var(--duration-slow) var(--ease-out) ${
-          index * 100
-        }ms both`,
+        animation: `fadeIn var(--duration-slow) var(--ease-out) ${index * 100}ms both`,
       }}
     >
-      {/* Status badge skeleton */}
-      <div
-        style={{
-          width: "80px",
-          height: "22px",
-          marginBottom: "12px",
-          ...shimmerStyle,
-          borderRadius: "999px",
-        }}
-      />
-      {/* Title skeleton */}
-      <div
-        style={{
-          width: "60%",
-          height: "16px",
-          marginBottom: "8px",
-          ...shimmerStyle,
-        }}
-      />
-      {/* Description skeleton */}
-      <div
-        style={{
-          width: "90%",
-          height: "12px",
-          marginBottom: "6px",
-          ...shimmerStyle,
-        }}
-      />
-      <div
-        style={{
-          width: "40%",
-          height: "12px",
-          marginBottom: "14px",
-          ...shimmerStyle,
-        }}
-      />
-      {/* Status buttons skeleton */}
+      <div style={{ width: "80px", height: "22px", marginBottom: "12px", ...shimmerStyle, borderRadius: "999px" }} />
+      <div style={{ width: "60%", height: "16px", marginBottom: "8px", ...shimmerStyle }} />
+      <div style={{ width: "90%", height: "12px", marginBottom: "6px", ...shimmerStyle }} />
+      <div style={{ width: "40%", height: "12px", marginBottom: "14px", ...shimmerStyle }} />
       <div style={{ display: "flex", gap: "6px" }}>
         {[70, 85, 55].map((w, i) => (
-          <div
-            key={i}
-            style={{
-              width: `${w}px`,
-              height: "26px",
-              ...shimmerStyle,
-            }}
-          />
+          <div key={i} style={{ width: `${w}px`, height: "26px", ...shimmerStyle }} />
         ))}
       </div>
     </div>
   );
 }
 
-/* Empty state */
+/**
+ * EmptyState — shown when there are no tasks.
+ * Features a floating illustrated icon and a text prompt.
+ */
 function EmptyState() {
   return (
     <div
@@ -98,7 +75,7 @@ function EmptyState() {
         animation: "fadeInUp var(--duration-slow) var(--ease-out)",
       }}
     >
-      {/* Illustration */}
+      {/* Illustrated icon */}
       <div
         style={{
           width: "80px",
@@ -114,43 +91,11 @@ function EmptyState() {
           animation: "float 4s ease-in-out infinite",
         }}
       >
-        <svg
-          width="32"
-          height="32"
-          viewBox="0 0 32 32"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <rect
-            x="5"
-            y="7"
-            width="22"
-            height="18"
-            rx="3"
-            stroke="var(--text-tertiary)"
-            strokeWidth="1.5"
-          />
-          <path
-            d="M10 14h12M10 18h8"
-            stroke="var(--text-tertiary)"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-          />
-          <circle
-            cx="24"
-            cy="10"
-            r="5"
-            fill="var(--accent-primary)"
-            fillOpacity="0.2"
-            stroke="var(--accent-primary)"
-            strokeWidth="1.2"
-          />
-          <path
-            d="M22.5 10h3M24 8.5v3"
-            stroke="var(--accent-primary)"
-            strokeWidth="1.2"
-            strokeLinecap="round"
-          />
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+          <rect x="5" y="7" width="22" height="18" rx="3" stroke="var(--text-tertiary)" strokeWidth="1.5" />
+          <path d="M10 14h12M10 18h8" stroke="var(--text-tertiary)" strokeWidth="1.5" strokeLinecap="round" />
+          <circle cx="24" cy="10" r="5" fill="var(--accent-primary)" fillOpacity="0.2" stroke="var(--accent-primary)" strokeWidth="1.2" />
+          <path d="M22.5 10h3M24 8.5v3" stroke="var(--accent-primary)" strokeWidth="1.2" strokeLinecap="round" />
         </svg>
       </div>
 
@@ -181,12 +126,14 @@ function EmptyState() {
   );
 }
 
+// --- Main Component ---
+
 export default function TaskList({
   tasks,
   isLoading,
   onDelete,
   onStatusChange,
-}: Props) {
+}: TaskListProps) {
   if (isLoading) {
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>

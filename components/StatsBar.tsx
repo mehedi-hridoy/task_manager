@@ -1,6 +1,14 @@
 "use client";
 
+/**
+ * StatsBar — a row of filter pills that doubles as a status breakdown.
+ * Each pill shows the count for its status and highlights when active.
+ * Clicking a pill filters the task list to that status.
+ */
+
 import { TaskStatus } from "@/types/task";
+
+// --- Types ---
 
 interface Stats {
   total: number;
@@ -15,17 +23,20 @@ interface StatsBarProps {
   onFilterChange: (filter: "all" | TaskStatus) => void;
 }
 
-const filters: { key: "all" | TaskStatus; label: string }[] = [
+// --- Constants ---
+
+/** Filter options displayed in the bar. */
+const FILTERS: { key: "all" | TaskStatus; label: string }[] = [
   { key: "all", label: "All" },
   { key: "To Do", label: "To Do" },
   { key: "In Progress", label: "In Progress" },
   { key: "Done", label: "Done" },
 ];
 
-function getFilterCount(
-  key: "all" | TaskStatus,
-  stats: Stats
-): number {
+// --- Helpers ---
+
+/** Returns the task count for a given filter key. */
+function getFilterCount(key: "all" | TaskStatus, stats: Stats): number {
   switch (key) {
     case "all":
       return stats.total;
@@ -38,6 +49,7 @@ function getFilterCount(
   }
 }
 
+/** Returns the accent color associated with each status. */
 function getFilterColor(key: "all" | TaskStatus): string {
   switch (key) {
     case "all":
@@ -51,6 +63,7 @@ function getFilterColor(key: "all" | TaskStatus): string {
   }
 }
 
+/** Returns the background color for the active filter pill. */
 function getActiveBg(key: "all" | TaskStatus): string {
   switch (key) {
     case "all":
@@ -63,6 +76,22 @@ function getActiveBg(key: "all" | TaskStatus): string {
       return "var(--status-done-bg)";
   }
 }
+
+/** Returns the border color for the active filter pill. */
+function getActiveBorder(key: "all" | TaskStatus): string {
+  switch (key) {
+    case "all":
+      return "var(--border-default)";
+    case "To Do":
+      return "var(--status-todo-border)";
+    case "In Progress":
+      return "var(--status-progress-border)";
+    case "Done":
+      return "var(--status-done-border)";
+  }
+}
+
+// --- Component ---
 
 export default function StatsBar({
   stats,
@@ -79,7 +108,7 @@ export default function StatsBar({
         flexWrap: "wrap",
       }}
     >
-      {filters.map((f) => {
+      {FILTERS.map((f) => {
         const isActive = activeFilter === f.key;
         const count = getFilterCount(f.key, stats);
 
@@ -95,46 +124,30 @@ export default function StatsBar({
               padding: "6px 12px",
               fontSize: "13px",
               fontWeight: isActive ? 600 : 400,
-              color: isActive
-                ? getFilterColor(f.key)
-                : "var(--text-tertiary)",
-              background: isActive
-                ? getActiveBg(f.key)
-                : "transparent",
+              color: isActive ? getFilterColor(f.key) : "var(--text-tertiary)",
+              background: isActive ? getActiveBg(f.key) : "transparent",
               border: isActive
-                ? `1px solid ${
-                    f.key === "all"
-                      ? "var(--border-default)"
-                      : f.key === "To Do"
-                      ? "var(--status-todo-border)"
-                      : f.key === "In Progress"
-                      ? "var(--status-progress-border)"
-                      : "var(--status-done-border)"
-                  }`
+                ? `1px solid ${getActiveBorder(f.key)}`
                 : "1px solid transparent",
               borderRadius: "999px",
               cursor: "pointer",
-              transition:
-                "all var(--duration-fast) var(--ease-out)",
+              transition: "all var(--duration-fast) var(--ease-out)",
               letterSpacing: "-0.01em",
             }}
             onMouseEnter={(e) => {
               if (!isActive) {
-                e.currentTarget.style.color =
-                  "var(--text-secondary)";
-                e.currentTarget.style.background =
-                  "rgba(255, 255, 255, 0.03)";
+                e.currentTarget.style.color = "var(--text-secondary)";
+                e.currentTarget.style.background = "rgba(255, 255, 255, 0.03)";
               }
             }}
             onMouseLeave={(e) => {
               if (!isActive) {
-                e.currentTarget.style.color =
-                  "var(--text-tertiary)";
-                e.currentTarget.style.background =
-                  "transparent";
+                e.currentTarget.style.color = "var(--text-tertiary)";
+                e.currentTarget.style.background = "transparent";
               }
             }}
           >
+            {/* Colored dot indicator for status filters */}
             {f.key !== "all" && (
               <span
                 style={{

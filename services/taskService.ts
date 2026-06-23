@@ -1,42 +1,54 @@
 import { Task } from "@/types/task";
 
-export async function getTasks(): Promise<Task[]> {
-  const res = await fetch("/api/tasks");
+const API_BASE = "/api/tasks";
 
+/**
+ * Fetches all tasks from the API, sorted by newest first.
+ */
+export async function getTasks(): Promise<Task[]> {
+  const res = await fetch(API_BASE);
   return res.json();
 }
 
+/**
+ * Creates a new task with the given title, description, and status.
+ */
 export async function createTask(
   task: Omit<Task, "_id">
-) {
-  const res = await fetch("/api/tasks", {
+): Promise<Task> {
+  const res = await fetch(API_BASE, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(task),
   });
 
   return res.json();
 }
 
+/**
+ * Updates a task's status by ID.
+ * Only the status field is sent — the API merges it with existing data.
+ */
 export async function updateTask(
   id: string,
   status: string
-) {
-  const res = await fetch(`/api/tasks/${id}`, {
+): Promise<Task> {
+  const res = await fetch(`${API_BASE}/${id}`, {
     method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ status }),
   });
 
   return res.json();
 }
 
-export async function deleteTask(id: string) {
-  const res = await fetch(`/api/tasks/${id}`, {
+/**
+ * Deletes a task by ID. Returns a confirmation message.
+ */
+export async function deleteTask(
+  id: string
+): Promise<{ message: string }> {
+  const res = await fetch(`${API_BASE}/${id}`, {
     method: "DELETE",
   });
 

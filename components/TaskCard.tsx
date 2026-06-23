@@ -1,15 +1,43 @@
 "use client";
 
+/**
+ * TaskCard — displays a single task as a card.
+ *
+ * Features:
+ *  - Color-coded status badge with unique icon per status
+ *  - Hover-reveal delete button with inline confirmation
+ *  - Inline status switcher buttons (no dropdown)
+ *  - Done state: strikethrough title + dimmed text
+ *  - Staggered fade-in animation based on list position
+ */
+
 import { useState } from "react";
 import { Task } from "@/types/task";
 
-interface Props {
+// --- Types ---
+
+interface TaskCardProps {
   task: Task;
   onDelete: (id: string) => void;
   onStatusChange: (id: string, status: string) => void;
+  /** Position in the list, used to stagger the entry animation. */
   index: number;
 }
 
+// --- Constants ---
+
+/** The three possible task statuses. */
+const STATUS_OPTIONS = ["To Do", "In Progress", "Done"] as const;
+
+// --- Helpers ---
+
+/**
+ * Returns color, background, border, and icon for a given status.
+ * Each status gets a unique icon:
+ *  - To Do:       dashed circle
+ *  - In Progress: clock
+ *  - Done:        checkmark
+ */
 function getStatusConfig(status: string) {
   switch (status) {
     case "To Do":
@@ -18,15 +46,8 @@ function getStatusConfig(status: string) {
         bg: "var(--status-todo-bg)",
         border: "var(--status-todo-border)",
         icon: (
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <circle
-              cx="6"
-              cy="6"
-              r="4.5"
-              stroke="currentColor"
-              strokeWidth="1.2"
-              strokeDasharray="3 2"
-            />
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+            <circle cx="6" cy="6" r="4.5" stroke="currentColor" strokeWidth="1.2" strokeDasharray="3 2" />
           </svg>
         ),
       };
@@ -36,21 +57,9 @@ function getStatusConfig(status: string) {
         bg: "var(--status-progress-bg)",
         border: "var(--status-progress-border)",
         icon: (
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <circle
-              cx="6"
-              cy="6"
-              r="4.5"
-              stroke="currentColor"
-              strokeWidth="1.2"
-            />
-            <path
-              d="M6 3v3l2 1"
-              stroke="currentColor"
-              strokeWidth="1.2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+            <circle cx="6" cy="6" r="4.5" stroke="currentColor" strokeWidth="1.2" />
+            <path d="M6 3v3l2 1" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         ),
       };
@@ -60,21 +69,9 @@ function getStatusConfig(status: string) {
         bg: "var(--status-done-bg)",
         border: "var(--status-done-border)",
         icon: (
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <circle
-              cx="6"
-              cy="6"
-              r="4.5"
-              stroke="currentColor"
-              strokeWidth="1.2"
-            />
-            <path
-              d="M4 6l1.5 1.5L8 5"
-              stroke="currentColor"
-              strokeWidth="1.2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+            <circle cx="6" cy="6" r="4.5" stroke="currentColor" strokeWidth="1.2" />
+            <path d="M4 6l1.5 1.5L8 5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         ),
       };
@@ -88,17 +85,18 @@ function getStatusConfig(status: string) {
   }
 }
 
-const statusOptions = ["To Do", "In Progress", "Done"];
+// --- Component ---
 
 export default function TaskCard({
   task,
   onDelete,
   onStatusChange,
   index,
-}: Props) {
+}: TaskCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
   const config = getStatusConfig(task.status);
   const isDone = task.status === "Done";
 
@@ -111,16 +109,12 @@ export default function TaskCard({
     <div
       id={`task-${task._id}`}
       style={{
-        background: isHovered
-          ? "var(--surface-overlay)"
-          : "var(--surface-raised)",
+        background: isHovered ? "var(--surface-overlay)" : "var(--surface-raised)",
         border: "1px solid var(--border-subtle)",
         borderRadius: "var(--radius-md)",
         padding: "18px 20px",
         transition: "all var(--duration-normal) var(--ease-out)",
-        animation: `fadeInUp var(--duration-slow) var(--ease-out) ${
-          index * 60
-        }ms both`,
+        animation: `fadeInUp var(--duration-slow) var(--ease-out) ${index * 60}ms both`,
         opacity: isDeleting ? 0.4 : 1,
         transform: isDeleting ? "scale(0.98)" : "none",
         position: "relative",
@@ -132,7 +126,7 @@ export default function TaskCard({
         setShowDeleteConfirm(false);
       }}
     >
-      {/* Top Row: Status + Actions */}
+      {/* Row 1: Status badge + action buttons */}
       <div
         style={{
           display: "flex",
@@ -162,7 +156,7 @@ export default function TaskCard({
           {task.status}
         </span>
 
-        {/* Action Buttons — visible on hover */}
+        {/* Delete button — only visible on hover */}
         <div
           style={{
             display: "flex",
@@ -173,8 +167,8 @@ export default function TaskCard({
             transition: "all var(--duration-fast) var(--ease-out)",
           }}
         >
-          {/* Delete */}
           {showDeleteConfirm ? (
+            /* Inline confirmation: "Delete? [Yes] [No]" */
             <div
               style={{
                 display: "flex",
@@ -183,13 +177,7 @@ export default function TaskCard({
                 animation: "fadeIn var(--duration-fast) var(--ease-out)",
               }}
             >
-              <span
-                style={{
-                  fontSize: "11px",
-                  color: "var(--danger)",
-                  fontWeight: 500,
-                }}
-              >
+              <span style={{ fontSize: "11px", color: "var(--danger)", fontWeight: 500 }}>
                 Delete?
               </span>
               <button
@@ -204,7 +192,6 @@ export default function TaskCard({
                   border: "none",
                   borderRadius: "var(--radius-sm)",
                   cursor: "pointer",
-                  transition: "all var(--duration-fast) var(--ease-out)",
                 }}
               >
                 Yes
@@ -221,13 +208,13 @@ export default function TaskCard({
                   border: "1px solid var(--border-default)",
                   borderRadius: "var(--radius-sm)",
                   cursor: "pointer",
-                  transition: "all var(--duration-fast) var(--ease-out)",
                 }}
               >
                 No
               </button>
             </div>
           ) : (
+            /* Trash icon button */
             <button
               onClick={() => setShowDeleteConfirm(true)}
               aria-label="Delete task"
@@ -255,7 +242,7 @@ export default function TaskCard({
                 e.currentTarget.style.borderColor = "transparent";
               }}
             >
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
                 <path
                   d="M3 4h8M5.5 4V3a1 1 0 011-1h1a1 1 0 011 1v1M6 6.5v3M8 6.5v3M4.5 4l.5 7a1 1 0 001 1h2a1 1 0 001-1l.5-7"
                   stroke="currentColor"
@@ -269,7 +256,7 @@ export default function TaskCard({
         </div>
       </div>
 
-      {/* Title */}
+      {/* Row 2: Title */}
       <h3
         style={{
           fontSize: "15px",
@@ -285,7 +272,7 @@ export default function TaskCard({
         {task.title}
       </h3>
 
-      {/* Description */}
+      {/* Row 3: Description */}
       <p
         style={{
           fontSize: "13px",
@@ -299,16 +286,12 @@ export default function TaskCard({
         {task.description}
       </p>
 
-      {/* Status Changer */}
-      <div
-        style={{
-          display: "flex",
-          gap: "6px",
-        }}
-      >
-        {statusOptions.map((opt) => {
+      {/* Row 4: Status switcher buttons */}
+      <div style={{ display: "flex", gap: "6px" }}>
+        {STATUS_OPTIONS.map((opt) => {
           const isActive = task.status === opt;
           const optConfig = getStatusConfig(opt);
+
           return (
             <button
               key={opt}
@@ -322,9 +305,7 @@ export default function TaskCard({
                 fontFamily: "inherit",
                 color: isActive ? optConfig.color : "var(--text-tertiary)",
                 background: isActive ? optConfig.bg : "transparent",
-                border: `1px solid ${
-                  isActive ? optConfig.border : "var(--border-subtle)"
-                }`,
+                border: `1px solid ${isActive ? optConfig.border : "var(--border-subtle)"}`,
                 borderRadius: "var(--radius-sm)",
                 cursor: isActive ? "default" : "pointer",
                 transition: "all var(--duration-fast) var(--ease-out)",
@@ -334,8 +315,7 @@ export default function TaskCard({
                 if (!isActive) {
                   e.currentTarget.style.borderColor = "var(--border-default)";
                   e.currentTarget.style.color = "var(--text-secondary)";
-                  e.currentTarget.style.background =
-                    "rgba(255, 255, 255, 0.03)";
+                  e.currentTarget.style.background = "rgba(255, 255, 255, 0.03)";
                 }
               }}
               onMouseLeave={(e) => {

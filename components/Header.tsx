@@ -1,5 +1,10 @@
 "use client";
 
+/**
+ * Header — sticky top bar with the app logo, task count, and "New Task" button.
+ * Uses a glassmorphism (backdrop-blur) effect for a premium layered look.
+ */
+
 interface HeaderProps {
   taskCount: number;
   onNewTask: () => void;
@@ -35,14 +40,8 @@ export default function Header({
         }}
       >
         {/* Logo + Title */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "12px",
-          }}
-        >
-          {/* Logo Mark */}
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          {/* Gradient logo mark */}
           <div
             style={{
               width: "32px",
@@ -62,7 +61,7 @@ export default function Header({
               height="16"
               viewBox="0 0 16 16"
               fill="none"
-              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
             >
               <path
                 d="M2 4h12M2 8h8M2 12h10"
@@ -100,7 +99,7 @@ export default function Header({
           </div>
         </div>
 
-        {/* New Task Button */}
+        {/* CTA: toggles between "New Task" and "Cancel" */}
         <button
           id="new-task-button"
           onClick={onNewTask}
@@ -116,9 +115,7 @@ export default function Header({
             background: showForm
               ? "var(--surface-overlay)"
               : "linear-gradient(135deg, var(--accent-primary) 0%, #d4922e 100%)",
-            border: showForm
-              ? "1px solid var(--border-default)"
-              : "none",
+            border: showForm ? "1px solid var(--border-default)" : "none",
             borderRadius: "var(--radius-sm)",
             cursor: "pointer",
             transition: "all var(--duration-fast) var(--ease-out)",
@@ -143,25 +140,15 @@ export default function Header({
         >
           {showForm ? (
             <>
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <path
-                  d="M3.5 3.5l7 7M10.5 3.5l-7 7"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                />
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                <path d="M3.5 3.5l7 7M10.5 3.5l-7 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
               </svg>
               Cancel
             </>
           ) : (
             <>
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <path
-                  d="M7 2v10M2 7h10"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                />
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                <path d="M7 2v10M2 7h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
               </svg>
               New Task
             </>

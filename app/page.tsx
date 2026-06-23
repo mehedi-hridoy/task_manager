@@ -16,14 +16,19 @@ import {
 
 import { Task, TaskStatus } from "@/types/task";
 
+/**
+ * Home — the main page of the app.
+ *
+ * Manages the full task lifecycle: loading, creating, updating, deleting.
+ * Also handles client-side filtering by status and controls the form visibility.
+ */
 export default function Home() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeFilter, setActiveFilter] = useState<
-    "all" | TaskStatus
-  >("all");
+  const [activeFilter, setActiveFilter] = useState<"all" | TaskStatus>("all");
   const [showForm, setShowForm] = useState(false);
 
+  /** Fetches all tasks from the API and updates state. */
   const loadTasks = useCallback(async () => {
     try {
       const data = await getTasks();
@@ -39,22 +44,21 @@ export default function Home() {
     loadTasks();
   }, [loadTasks]);
 
-  async function handleAdd(
-    title: string,
-    description: string,
-    status: string
-  ) {
+  /** Creates a new task and collapses the form. */
+  async function handleAdd(title: string, description: string, status: string) {
     await createTask({ title, description, status });
     loadTasks();
     setShowForm(false);
   }
 
+  /** Optimistically removes the task from the UI, then confirms with the API. */
   async function handleDelete(id: string) {
     setTasks((prev) => prev.filter((t) => t._id !== id));
     await deleteTask(id);
     loadTasks();
   }
 
+  /** Optimistically updates the status in the UI, then syncs with the API. */
   async function handleStatusChange(id: string, status: string) {
     setTasks((prev) =>
       prev.map((t) =>
@@ -65,6 +69,8 @@ export default function Home() {
     loadTasks();
   }
 
+  // --- Derived state ---
+
   const filteredTasks =
     activeFilter === "all"
       ? tasks
@@ -73,10 +79,11 @@ export default function Home() {
   const stats = {
     total: tasks.length,
     todo: tasks.filter((t) => t.status === "To Do").length,
-    inProgress: tasks.filter((t) => t.status === "In Progress")
-      .length,
+    inProgress: tasks.filter((t) => t.status === "In Progress").length,
     done: tasks.filter((t) => t.status === "Done").length,
   };
+
+  // --- Render ---
 
   return (
     <div
@@ -88,7 +95,7 @@ export default function Home() {
         zIndex: 1,
       }}
     >
-      {/* Ambient glow */}
+      {/* Decorative ambient glow behind content */}
       <div
         style={{
           position: "fixed",
@@ -149,7 +156,6 @@ export default function Home() {
         />
       </main>
 
-      {/* Footer */}
       <footer
         style={{
           textAlign: "center",

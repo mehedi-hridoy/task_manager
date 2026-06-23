@@ -1,17 +1,28 @@
 "use client";
 
+/**
+ * TaskForm — a card-style form for creating new tasks.
+ *
+ * Features:
+ *  - Labeled input fields with accent-colored focus rings
+ *  - Inline validation errors with icons
+ *  - Button-based status selector (not a dropdown)
+ *  - Submit loading state
+ */
+
 import { useState } from "react";
 
-interface Props {
-  onAdd: (
-    title: string,
-    description: string,
-    status: string
-  ) => void;
+// --- Types ---
+
+interface TaskFormProps {
+  onAdd: (title: string, description: string, status: string) => void;
   onCancel: () => void;
 }
 
-const statusOptions = [
+// --- Constants ---
+
+/** Available status options with their associated colors. */
+const STATUS_OPTIONS = [
   {
     value: "To Do",
     label: "To Do",
@@ -35,73 +46,93 @@ const statusOptions = [
   },
 ];
 
-export default function TaskForm({ onAdd, onCancel }: Props) {
+// --- Shared Styles ---
+
+const inputBaseStyle: React.CSSProperties = {
+  width: "100%",
+  padding: "10px 14px",
+  fontSize: "14px",
+  fontFamily: "inherit",
+  color: "var(--text-primary)",
+  background: "var(--surface-base)",
+  border: "1px solid var(--border-default)",
+  borderRadius: "var(--radius-sm)",
+  outline: "none",
+  transition:
+    "border-color var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out)",
+  letterSpacing: "-0.01em",
+};
+
+const inputErrorStyle: React.CSSProperties = {
+  borderColor: "var(--danger)",
+  boxShadow: "0 0 0 3px var(--danger-bg)",
+};
+
+const labelStyle: React.CSSProperties = {
+  display: "block",
+  fontSize: "12px",
+  fontWeight: 600,
+  color: "var(--text-secondary)",
+  marginBottom: "6px",
+  letterSpacing: "0.02em",
+  textTransform: "uppercase",
+};
+
+// --- Helpers ---
+
+/** Small error icon used next to validation messages. */
+function ErrorIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+      <circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.2" />
+      <path d="M6 3.5v3M6 8.5v.01" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+/** Applies focus-ring styling to an input element. */
+function applyFocusRing(el: HTMLElement) {
+  el.style.borderColor = "var(--accent-primary)";
+  el.style.boxShadow = "0 0 0 3px var(--accent-primary-muted)";
+}
+
+/** Removes focus-ring styling from an input element. */
+function removeFocusRing(el: HTMLElement) {
+  el.style.borderColor = "var(--border-default)";
+  el.style.boxShadow = "none";
+}
+
+// --- Component ---
+
+export default function TaskForm({ onAdd, onCancel }: TaskFormProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState("To Do");
-  const [errors, setErrors] = useState({
-    title: "",
-    description: "",
-  });
+  const [errors, setErrors] = useState({ title: "", description: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  /** Validates fields and submits if valid. */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const newErrors = { title: "", description: "" };
 
-    if (!title.trim()) {
-      newErrors.title = "Give your task a name";
-    }
-
-    if (!description.trim()) {
-      newErrors.description = "Add a brief description";
-    }
+    if (!title.trim()) newErrors.title = "Give your task a name";
+    if (!description.trim()) newErrors.description = "Add a brief description";
 
     setErrors(newErrors);
 
-    if (newErrors.title || newErrors.description) {
-      return;
-    }
+    if (newErrors.title || newErrors.description) return;
 
     setIsSubmitting(true);
     await onAdd(title, description, status);
     setIsSubmitting(false);
 
+    // Reset form
     setTitle("");
     setDescription("");
     setStatus("To Do");
     setErrors({ title: "", description: "" });
-  };
-
-  const inputBaseStyle: React.CSSProperties = {
-    width: "100%",
-    padding: "10px 14px",
-    fontSize: "14px",
-    fontFamily: "inherit",
-    color: "var(--text-primary)",
-    background: "var(--surface-base)",
-    border: "1px solid var(--border-default)",
-    borderRadius: "var(--radius-sm)",
-    outline: "none",
-    transition:
-      "border-color var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out)",
-    letterSpacing: "-0.01em",
-  };
-
-  const inputErrorStyle: React.CSSProperties = {
-    borderColor: "var(--danger)",
-    boxShadow: "0 0 0 3px var(--danger-bg)",
-  };
-
-  const labelStyle: React.CSSProperties = {
-    display: "block",
-    fontSize: "12px",
-    fontWeight: 600,
-    color: "var(--text-secondary)",
-    marginBottom: "6px",
-    letterSpacing: "0.02em",
-    textTransform: "uppercase" as const,
   };
 
   return (
@@ -142,6 +173,7 @@ export default function TaskForm({ onAdd, onCancel }: Props) {
         <button
           type="button"
           onClick={onCancel}
+          aria-label="Close form"
           style={{
             display: "flex",
             alignItems: "center",
@@ -163,24 +195,16 @@ export default function TaskForm({ onAdd, onCancel }: Props) {
             e.currentTarget.style.color = "var(--text-tertiary)";
             e.currentTarget.style.background = "var(--surface-overlay)";
           }}
-          aria-label="Close form"
         >
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <path
-              d="M2 2l8 8M10 2l-8 8"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-            />
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+            <path d="M2 2l8 8M10 2l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
           </svg>
         </button>
       </div>
 
       {/* Title Field */}
       <div>
-        <label htmlFor="task-title" style={labelStyle}>
-          Title
-        </label>
+        <label htmlFor="task-title" style={labelStyle}>Title</label>
         <input
           id="task-title"
           type="text"
@@ -190,49 +214,20 @@ export default function TaskForm({ onAdd, onCancel }: Props) {
             setTitle(e.target.value);
             if (errors.title) setErrors((p) => ({ ...p, title: "" }));
           }}
-          style={{
-            ...inputBaseStyle,
-            ...(errors.title ? inputErrorStyle : {}),
-          }}
-          onFocus={(e) => {
-            if (!errors.title) {
-              e.currentTarget.style.borderColor = "var(--accent-primary)";
-              e.currentTarget.style.boxShadow =
-                "0 0 0 3px var(--accent-primary-muted)";
-            }
-          }}
-          onBlur={(e) => {
-            if (!errors.title) {
-              e.currentTarget.style.borderColor = "var(--border-default)";
-              e.currentTarget.style.boxShadow = "none";
-            }
-          }}
+          style={{ ...inputBaseStyle, ...(errors.title ? inputErrorStyle : {}) }}
+          onFocus={(e) => { if (!errors.title) applyFocusRing(e.currentTarget); }}
+          onBlur={(e) => { if (!errors.title) removeFocusRing(e.currentTarget); }}
         />
         {errors.title && (
-          <p
-            style={{
-              fontSize: "12px",
-              color: "var(--danger)",
-              marginTop: "6px",
-              display: "flex",
-              alignItems: "center",
-              gap: "4px",
-            }}
-          >
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-              <circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.2" />
-              <path d="M6 3.5v3M6 8.5v.01" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-            </svg>
-            {errors.title}
+          <p style={{ fontSize: "12px", color: "var(--danger)", marginTop: "6px", display: "flex", alignItems: "center", gap: "4px" }}>
+            <ErrorIcon /> {errors.title}
           </p>
         )}
       </div>
 
       {/* Description Field */}
       <div>
-        <label htmlFor="task-description" style={labelStyle}>
-          Description
-        </label>
+        <label htmlFor="task-description" style={labelStyle}>Description</label>
         <textarea
           id="task-description"
           placeholder="Describe the task briefly..."
@@ -240,60 +235,30 @@ export default function TaskForm({ onAdd, onCancel }: Props) {
           rows={3}
           onChange={(e) => {
             setDescription(e.target.value);
-            if (errors.description)
-              setErrors((p) => ({ ...p, description: "" }));
+            if (errors.description) setErrors((p) => ({ ...p, description: "" }));
           }}
           style={{
             ...inputBaseStyle,
-            resize: "vertical" as const,
+            resize: "vertical",
             minHeight: "80px",
             lineHeight: 1.5,
             ...(errors.description ? inputErrorStyle : {}),
           }}
-          onFocus={(e) => {
-            if (!errors.description) {
-              e.currentTarget.style.borderColor = "var(--accent-primary)";
-              e.currentTarget.style.boxShadow =
-                "0 0 0 3px var(--accent-primary-muted)";
-            }
-          }}
-          onBlur={(e) => {
-            if (!errors.description) {
-              e.currentTarget.style.borderColor = "var(--border-default)";
-              e.currentTarget.style.boxShadow = "none";
-            }
-          }}
+          onFocus={(e) => { if (!errors.description) applyFocusRing(e.currentTarget); }}
+          onBlur={(e) => { if (!errors.description) removeFocusRing(e.currentTarget); }}
         />
         {errors.description && (
-          <p
-            style={{
-              fontSize: "12px",
-              color: "var(--danger)",
-              marginTop: "6px",
-              display: "flex",
-              alignItems: "center",
-              gap: "4px",
-            }}
-          >
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-              <circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.2" />
-              <path d="M6 3.5v3M6 8.5v.01" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-            </svg>
-            {errors.description}
+          <p style={{ fontSize: "12px", color: "var(--danger)", marginTop: "6px", display: "flex", alignItems: "center", gap: "4px" }}>
+            <ErrorIcon /> {errors.description}
           </p>
         )}
       </div>
 
-      {/* Status Selector */}
+      {/* Status Selector — button group instead of a dropdown */}
       <div>
         <label style={labelStyle}>Status</label>
-        <div
-          style={{
-            display: "flex",
-            gap: "8px",
-          }}
-        >
-          {statusOptions.map((opt) => {
+        <div style={{ display: "flex", gap: "8px" }}>
+          {STATUS_OPTIONS.map((opt) => {
             const isSelected = status === opt.value;
             return (
               <button
@@ -308,13 +273,10 @@ export default function TaskForm({ onAdd, onCancel }: Props) {
                   fontFamily: "inherit",
                   color: isSelected ? opt.color : "var(--text-tertiary)",
                   background: isSelected ? opt.bg : "var(--surface-base)",
-                  border: `1px solid ${
-                    isSelected ? opt.border : "var(--border-default)"
-                  }`,
+                  border: `1px solid ${isSelected ? opt.border : "var(--border-default)"}`,
                   borderRadius: "var(--radius-sm)",
                   cursor: "pointer",
-                  transition:
-                    "all var(--duration-fast) var(--ease-out)",
+                  transition: "all var(--duration-fast) var(--ease-out)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -326,9 +288,7 @@ export default function TaskForm({ onAdd, onCancel }: Props) {
                     width: "6px",
                     height: "6px",
                     borderRadius: "50%",
-                    background: isSelected
-                      ? opt.color
-                      : "var(--text-tertiary)",
+                    background: isSelected ? opt.color : "var(--text-tertiary)",
                     opacity: isSelected ? 1 : 0.4,
                     transition: "all var(--duration-fast) var(--ease-out)",
                   }}
@@ -340,7 +300,7 @@ export default function TaskForm({ onAdd, onCancel }: Props) {
         </div>
       </div>
 
-      {/* Actions */}
+      {/* Form Actions */}
       <div
         style={{
           display: "flex",
