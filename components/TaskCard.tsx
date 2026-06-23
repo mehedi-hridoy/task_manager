@@ -12,14 +12,14 @@
  */
 
 import { useState } from "react";
-import { Task } from "@/types/task";
+import { Task, TaskStatus } from "@/types/task";
 
 // --- Types ---
 
 interface TaskCardProps {
   task: Task;
   onDelete: (id: string) => void;
-  onStatusChange: (id: string, status: string) => void;
+  onStatusChange: (id: string, status: TaskStatus) => void;
   /** Position in the list, used to stagger the entry animation. */
   index: number;
 }
@@ -27,7 +27,7 @@ interface TaskCardProps {
 // --- Constants ---
 
 /** The three possible task statuses. */
-const STATUS_OPTIONS = ["To Do", "In Progress", "Done"] as const;
+const STATUS_OPTIONS = ["To Do", "In Progress", "Done"] as const satisfies readonly TaskStatus[];
 
 // --- Helpers ---
 
@@ -38,7 +38,7 @@ const STATUS_OPTIONS = ["To Do", "In Progress", "Done"] as const;
  *  - In Progress: clock
  *  - Done:        checkmark
  */
-function getStatusConfig(status: string) {
+function getStatusConfig(status: TaskStatus) {
   switch (status) {
     case "To Do":
       return {

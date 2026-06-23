@@ -10,7 +10,7 @@
  */
 
 import TaskCard from "./TaskCard";
-import { Task } from "@/types/task";
+import { Task, TaskStatus } from "@/types/task";
 
 // --- Types ---
 
@@ -18,7 +18,7 @@ interface TaskListProps {
   tasks: Task[];
   isLoading: boolean;
   onDelete: (id: string) => void;
-  onStatusChange: (id: string, status: string) => void;
+  onStatusChange: (id: string, status: TaskStatus) => void;
 }
 
 // --- Sub-components ---

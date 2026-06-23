@@ -45,7 +45,11 @@ export default function Home() {
   }, [loadTasks]);
 
   /** Creates a new task and collapses the form. */
-  async function handleAdd(title: string, description: string, status: string) {
+  async function handleAdd(
+    title: string,
+    description: string,
+    status: TaskStatus
+  ) {
     await createTask({ title, description, status });
     loadTasks();
     setShowForm(false);
@@ -59,10 +63,10 @@ export default function Home() {
   }
 
   /** Optimistically updates the status in the UI, then syncs with the API. */
-  async function handleStatusChange(id: string, status: string) {
+  async function handleStatusChange(id: string, status: TaskStatus) {
     setTasks((prev) =>
       prev.map((t) =>
-        t._id === id ? { ...t, status: status as TaskStatus } : t
+        t._id === id ? { ...t, status } : t
       )
     );
     await updateTask(id, status);

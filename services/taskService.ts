@@ -1,4 +1,4 @@
-import { Task } from "@/types/task";
+import { Task, TaskStatus } from "@/types/task";
 
 const API_BASE = "/api/tasks";
 
@@ -31,7 +31,7 @@ export async function createTask(
  */
 export async function updateTask(
   id: string,
-  status: string
+  status: TaskStatus
 ): Promise<Task> {
   const res = await fetch(`${API_BASE}/${id}`, {
     method: "PATCH",

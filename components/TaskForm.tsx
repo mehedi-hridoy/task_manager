@@ -11,11 +11,12 @@
  */
 
 import { useState } from "react";
+import { TaskStatus } from "@/types/task";
 
 // --- Types ---
 
 interface TaskFormProps {
-  onAdd: (title: string, description: string, status: string) => void;
+  onAdd: (title: string, description: string, status: TaskStatus) => void;
   onCancel: () => void;
 }
 
@@ -44,7 +45,13 @@ const STATUS_OPTIONS = [
     bg: "var(--status-done-bg)",
     border: "var(--status-done-border)",
   },
-];
+] as const satisfies ReadonlyArray<{
+  value: TaskStatus;
+  label: string;
+  color: string;
+  bg: string;
+  border: string;
+}>;
 
 // --- Shared Styles ---
 
@@ -107,7 +114,7 @@ function removeFocusRing(el: HTMLElement) {
 export default function TaskForm({ onAdd, onCancel }: TaskFormProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [status, setStatus] = useState("To Do");
+  const [status, setStatus] = useState<TaskStatus>("To Do");
   const [errors, setErrors] = useState({ title: "", description: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
