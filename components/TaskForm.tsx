@@ -8,130 +8,411 @@ interface Props {
     description: string,
     status: string
   ) => void;
+  onCancel: () => void;
 }
 
-export default function TaskForm({
-  onAdd,
-}: Props) {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] =
-    useState("");
-  const [status, setStatus] =
-    useState("To Do");
+const statusOptions = [
+  {
+    value: "To Do",
+    label: "To Do",
+    color: "var(--status-todo)",
+    bg: "var(--status-todo-bg)",
+    border: "var(--status-todo-border)",
+  },
+  {
+    value: "In Progress",
+    label: "In Progress",
+    color: "var(--status-progress)",
+    bg: "var(--status-progress-bg)",
+    border: "var(--status-progress-border)",
+  },
+  {
+    value: "Done",
+    label: "Done",
+    color: "var(--status-done)",
+    bg: "var(--status-done-bg)",
+    border: "var(--status-done-border)",
+  },
+];
 
+export default function TaskForm({ onAdd, onCancel }: Props) {
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [status, setStatus] = useState("To Do");
   const [errors, setErrors] = useState({
     title: "",
     description: "",
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (
-    e: React.FormEvent
-  ) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const newErrors = {
-      title: "",
-      description: "",
-    };
+    const newErrors = { title: "", description: "" };
 
     if (!title.trim()) {
-      newErrors.title =
-        "Title is required";
+      newErrors.title = "Give your task a name";
     }
 
     if (!description.trim()) {
-      newErrors.description =
-        "Description is required";
+      newErrors.description = "Add a brief description";
     }
 
     setErrors(newErrors);
 
-    if (
-      newErrors.title ||
-      newErrors.description
-    ) {
+    if (newErrors.title || newErrors.description) {
       return;
     }
 
-    onAdd(title, description, status);
+    setIsSubmitting(true);
+    await onAdd(title, description, status);
+    setIsSubmitting(false);
 
     setTitle("");
     setDescription("");
     setStatus("To Do");
+    setErrors({ title: "", description: "" });
+  };
 
-    setErrors({
-      title: "",
-      description: "",
-    });
+  const inputBaseStyle: React.CSSProperties = {
+    width: "100%",
+    padding: "10px 14px",
+    fontSize: "14px",
+    fontFamily: "inherit",
+    color: "var(--text-primary)",
+    background: "var(--surface-base)",
+    border: "1px solid var(--border-default)",
+    borderRadius: "var(--radius-sm)",
+    outline: "none",
+    transition:
+      "border-color var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out)",
+    letterSpacing: "-0.01em",
+  };
+
+  const inputErrorStyle: React.CSSProperties = {
+    borderColor: "var(--danger)",
+    boxShadow: "0 0 0 3px var(--danger-bg)",
+  };
+
+  const labelStyle: React.CSSProperties = {
+    display: "block",
+    fontSize: "12px",
+    fontWeight: 600,
+    color: "var(--text-secondary)",
+    marginBottom: "6px",
+    letterSpacing: "0.02em",
+    textTransform: "uppercase" as const,
   };
 
   return (
     <form
+      id="task-form"
       onSubmit={handleSubmit}
-      className="space-y-4 border p-4 rounded"
+      style={{
+        background: "var(--surface-raised)",
+        border: "1px solid var(--border-default)",
+        borderRadius: "var(--radius-lg)",
+        padding: "24px",
+        display: "flex",
+        flexDirection: "column",
+        gap: "18px",
+        boxShadow: "var(--shadow-md)",
+      }}
     >
-      <div>
-        <input
-          className={`w-full border p-2 rounded ${
-            errors.title
-              ? "border-red-500"
-              : ""
-          }`}
-          placeholder="Title"
-          value={title}
-          onChange={(e) =>
-            setTitle(e.target.value)
-          }
-        />
+      {/* Form Header */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          paddingBottom: "12px",
+          borderBottom: "1px solid var(--border-subtle)",
+        }}
+      >
+        <h2
+          style={{
+            fontSize: "15px",
+            fontWeight: 700,
+            color: "var(--text-primary)",
+            letterSpacing: "-0.02em",
+          }}
+        >
+          Create a new task
+        </h2>
+        <button
+          type="button"
+          onClick={onCancel}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: "28px",
+            height: "28px",
+            border: "none",
+            background: "var(--surface-overlay)",
+            borderRadius: "var(--radius-sm)",
+            color: "var(--text-tertiary)",
+            cursor: "pointer",
+            transition: "all var(--duration-fast) var(--ease-out)",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.color = "var(--text-secondary)";
+            e.currentTarget.style.background = "var(--surface-elevated)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.color = "var(--text-tertiary)";
+            e.currentTarget.style.background = "var(--surface-overlay)";
+          }}
+          aria-label="Close form"
+        >
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path
+              d="M2 2l8 8M10 2l-8 8"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
+          </svg>
+        </button>
+      </div>
 
+      {/* Title Field */}
+      <div>
+        <label htmlFor="task-title" style={labelStyle}>
+          Title
+        </label>
+        <input
+          id="task-title"
+          type="text"
+          placeholder="What needs to be done?"
+          value={title}
+          onChange={(e) => {
+            setTitle(e.target.value);
+            if (errors.title) setErrors((p) => ({ ...p, title: "" }));
+          }}
+          style={{
+            ...inputBaseStyle,
+            ...(errors.title ? inputErrorStyle : {}),
+          }}
+          onFocus={(e) => {
+            if (!errors.title) {
+              e.currentTarget.style.borderColor = "var(--accent-primary)";
+              e.currentTarget.style.boxShadow =
+                "0 0 0 3px var(--accent-primary-muted)";
+            }
+          }}
+          onBlur={(e) => {
+            if (!errors.title) {
+              e.currentTarget.style.borderColor = "var(--border-default)";
+              e.currentTarget.style.boxShadow = "none";
+            }
+          }}
+        />
         {errors.title && (
-          <p className="text-red-500 text-sm mt-1">
+          <p
+            style={{
+              fontSize: "12px",
+              color: "var(--danger)",
+              marginTop: "6px",
+              display: "flex",
+              alignItems: "center",
+              gap: "4px",
+            }}
+          >
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.2" />
+              <path d="M6 3.5v3M6 8.5v.01" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+            </svg>
             {errors.title}
           </p>
         )}
       </div>
 
+      {/* Description Field */}
       <div>
+        <label htmlFor="task-description" style={labelStyle}>
+          Description
+        </label>
         <textarea
-          className={`w-full border p-2 rounded ${
-            errors.description
-              ? "border-red-500"
-              : ""
-          }`}
-          placeholder="Description"
+          id="task-description"
+          placeholder="Describe the task briefly..."
           value={description}
-          onChange={(e) =>
-            setDescription(
-              e.target.value
-            )
-          }
+          rows={3}
+          onChange={(e) => {
+            setDescription(e.target.value);
+            if (errors.description)
+              setErrors((p) => ({ ...p, description: "" }));
+          }}
+          style={{
+            ...inputBaseStyle,
+            resize: "vertical" as const,
+            minHeight: "80px",
+            lineHeight: 1.5,
+            ...(errors.description ? inputErrorStyle : {}),
+          }}
+          onFocus={(e) => {
+            if (!errors.description) {
+              e.currentTarget.style.borderColor = "var(--accent-primary)";
+              e.currentTarget.style.boxShadow =
+                "0 0 0 3px var(--accent-primary-muted)";
+            }
+          }}
+          onBlur={(e) => {
+            if (!errors.description) {
+              e.currentTarget.style.borderColor = "var(--border-default)";
+              e.currentTarget.style.boxShadow = "none";
+            }
+          }}
         />
-
         {errors.description && (
-          <p className="text-red-500 text-sm mt-1">
+          <p
+            style={{
+              fontSize: "12px",
+              color: "var(--danger)",
+              marginTop: "6px",
+              display: "flex",
+              alignItems: "center",
+              gap: "4px",
+            }}
+          >
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+              <circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.2" />
+              <path d="M6 3.5v3M6 8.5v.01" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+            </svg>
             {errors.description}
           </p>
         )}
       </div>
 
-      <select
-        className="w-full border p-2 rounded"
-        value={status}
-        onChange={(e) =>
-          setStatus(e.target.value)
-        }
-      >
-        <option>To Do</option>
-        <option>In Progress</option>
-        <option>Done</option>
-      </select>
+      {/* Status Selector */}
+      <div>
+        <label style={labelStyle}>Status</label>
+        <div
+          style={{
+            display: "flex",
+            gap: "8px",
+          }}
+        >
+          {statusOptions.map((opt) => {
+            const isSelected = status === opt.value;
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => setStatus(opt.value)}
+                style={{
+                  flex: 1,
+                  padding: "8px 12px",
+                  fontSize: "13px",
+                  fontWeight: isSelected ? 600 : 400,
+                  fontFamily: "inherit",
+                  color: isSelected ? opt.color : "var(--text-tertiary)",
+                  background: isSelected ? opt.bg : "var(--surface-base)",
+                  border: `1px solid ${
+                    isSelected ? opt.border : "var(--border-default)"
+                  }`,
+                  borderRadius: "var(--radius-sm)",
+                  cursor: "pointer",
+                  transition:
+                    "all var(--duration-fast) var(--ease-out)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "6px",
+                }}
+              >
+                <span
+                  style={{
+                    width: "6px",
+                    height: "6px",
+                    borderRadius: "50%",
+                    background: isSelected
+                      ? opt.color
+                      : "var(--text-tertiary)",
+                    opacity: isSelected ? 1 : 0.4,
+                    transition: "all var(--duration-fast) var(--ease-out)",
+                  }}
+                />
+                {opt.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
-      <button
-        type="submit"
-        className="bg-black text-white px-4 py-2 rounded"
+      {/* Actions */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "flex-end",
+          gap: "10px",
+          paddingTop: "8px",
+          borderTop: "1px solid var(--border-subtle)",
+        }}
       >
-        Add Task
-      </button>
+        <button
+          type="button"
+          onClick={onCancel}
+          style={{
+            padding: "9px 18px",
+            fontSize: "13px",
+            fontWeight: 500,
+            fontFamily: "inherit",
+            color: "var(--text-secondary)",
+            background: "transparent",
+            border: "1px solid var(--border-default)",
+            borderRadius: "var(--radius-sm)",
+            cursor: "pointer",
+            transition: "all var(--duration-fast) var(--ease-out)",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = "var(--surface-overlay)";
+            e.currentTarget.style.borderColor = "var(--border-hover)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = "transparent";
+            e.currentTarget.style.borderColor = "var(--border-default)";
+          }}
+        >
+          Cancel
+        </button>
+        <button
+          id="submit-task"
+          type="submit"
+          disabled={isSubmitting}
+          style={{
+            padding: "9px 22px",
+            fontSize: "13px",
+            fontWeight: 600,
+            fontFamily: "inherit",
+            color: "var(--text-inverse)",
+            background:
+              "linear-gradient(135deg, var(--accent-primary) 0%, #d4922e 100%)",
+            border: "none",
+            borderRadius: "var(--radius-sm)",
+            cursor: isSubmitting ? "wait" : "pointer",
+            opacity: isSubmitting ? 0.7 : 1,
+            transition: "all var(--duration-fast) var(--ease-out)",
+            boxShadow:
+              "0 2px 8px rgba(232, 168, 71, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15)",
+            letterSpacing: "-0.01em",
+          }}
+          onMouseEnter={(e) => {
+            if (!isSubmitting) {
+              e.currentTarget.style.boxShadow =
+                "0 4px 16px rgba(232, 168, 71, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15)";
+              e.currentTarget.style.transform = "translateY(-1px)";
+            }
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.boxShadow =
+              "0 2px 8px rgba(232, 168, 71, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15)";
+            e.currentTarget.style.transform = "translateY(0)";
+          }}
+        >
+          {isSubmitting ? "Creating..." : "Create Task"}
+        </button>
+      </div>
     </form>
   );
 }
