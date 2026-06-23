@@ -2,6 +2,10 @@
 
 A clean, full-stack task management application built with **Next.js 16**, **React 19**, and **MongoDB**. Create, view, update, and delete tasks with a polished dark-themed UI.
 
+## Live Link
+
+🌐 https://task-manager-three-flax.vercel.app/
+
 ## Features
 
 - **Add tasks** with a title, description, and status (To Do / In Progress / Done)
